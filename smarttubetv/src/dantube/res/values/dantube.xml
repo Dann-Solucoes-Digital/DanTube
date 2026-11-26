@@ -12,6 +12,7 @@
     <color name="scheme_grey_background_dark">#101625</color>
     <color name="scheme_grey_shelf_background_dark">#080C16</color>
     <color name="scheme_grey_card_background_dark">#121928</color>
+    <color name="semi_red">#7461AD</color>
     <color name="fastlane_background">#C4B3FA</color>
     <color name="fastlane_background_dark">#0B101C</color>
     <color name="shelf_background_dark">#080C16</color>

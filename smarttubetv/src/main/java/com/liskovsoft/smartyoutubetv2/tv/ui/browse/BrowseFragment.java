@@ -33,6 +33,7 @@ import com.liskovsoft.smartyoutubetv2.common.app.presenters.SplashPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.views.BrowseView;
 import com.liskovsoft.smartyoutubetv2.common.misc.CrashRestorer;
 import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
+import com.liskovsoft.smartyoutubetv2.tv.BuildConfig;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.smartyoutubetv2.tv.presenter.IconHeaderItemPresenter;
 import com.liskovsoft.smartyoutubetv2.tv.ui.browse.dialog.ErrorDialogFragment;
@@ -510,6 +511,10 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
     @Override
     public void updateBadge() {
         if (getContext() == null) {
+            return;
+        }
+        if ("dantube".equals(BuildConfig.FLAVOR)) {
+            setBadgeDrawable(ContextCompat.getDrawable(getContext(), R.mipmap.app_logo));
             return;
         }
 

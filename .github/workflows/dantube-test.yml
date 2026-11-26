@@ -32,8 +32,7 @@ jobs:
           set -euo pipefail
           sdk_tools="$ANDROID_HOME/build-tools/30.0.3"
           cd smarttubetv/build/outputs/apk/dantube/debug
-          apk=$(find . -maxdepth 1 -name 'DanTube-*-universal-debug.apk' -printf '%f
-')
+          apk=$(find . -maxdepth 1 -name 'DanTube-*-universal-debug.apk' -print)
           test -f "$apk"
           "$sdk_tools/apksigner" verify "$apk"
           "$sdk_tools/aapt" dump badging "$apk" | grep "package: name='br.com.dannsolucoesdigitais.dantube'"
