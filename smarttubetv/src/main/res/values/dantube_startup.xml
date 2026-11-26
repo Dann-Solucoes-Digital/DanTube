@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dantube_welcome">Welcome to DanTube</string>
+    <string name="dantube_connect_youtube">Connect YouTube account</string>
+    <string name="dantube_continue_as_guest">Continue without an account</string>
+</resources>

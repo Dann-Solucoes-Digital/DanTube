@@ -3,6 +3,10 @@ package com.liskovsoft.smartyoutubetv2.tv.presenter;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Build.VERSION;
 import android.util.Pair;
@@ -23,6 +27,7 @@ import com.liskovsoft.sharedutils.mylogger.Log;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
 import com.liskovsoft.smartyoutubetv2.common.prefs.MainUIData;
 import com.liskovsoft.smartyoutubetv2.common.utils.ClickbaitRemover;
+import com.liskovsoft.smartyoutubetv2.tv.BuildConfig;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.smartyoutubetv2.tv.presenter.base.LongClickPresenter;
 import com.liskovsoft.smartyoutubetv2.tv.ui.browse.video.GridFragmentHelper;
@@ -67,7 +72,39 @@ public class VideoCardPresenter extends LongClickPresenter {
 
         updateDimensions(context);
 
+        boolean isDanTube = "dantube".equals(BuildConfig.FLAVOR);
+        if (isDanTube) {
+            mDefaultBackgroundColor = 0xFF121928;
+            mSelectedBackgroundColor = 0xFF181D30;
+            mSelectedTextColor = mDefaultTextColor;
+        }
+        float density = context.getResources().getDisplayMetrics().density;
+        Paint focusPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        focusPaint.setColor(0xFFD1C1FF);
+        focusPaint.setStyle(Paint.Style.STROKE);
+        focusPaint.setStrokeWidth(density);
+        RectF outline = new RectF();
+
         ComplexImageCardView cardView = new ComplexImageCardView(context) {
+            @Override
+            protected void onFocusChanged(boolean gainFocus, int direction, Rect previous) {
+                super.onFocusChanged(gainFocus, direction, previous);
+                if (isDanTube) {
+                    animate().translationY(gainFocus ? -3 * density : 0).setDuration(150).start();
+                    invalidate();
+                }
+            }
+
+            @Override
+            public void draw(Canvas canvas) {
+                super.draw(canvas);
+                if (isDanTube && (hasFocus() || isHovered())) {
+                    float inset = density / 2;
+                    outline.set(inset, inset, getWidth() - inset, getHeight() - inset);
+                    canvas.drawRoundRect(outline, 8 * density, 8 * density, focusPaint);
+                }
+            }
+
             @Override
             public void setSelected(boolean selected) {
                 updateCardBackgroundColor(this, selected);

@@ -1,0 +1,47 @@
+name: DanTube Android TV test APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [develop]
+    paths:
+      - 'smarttubetv/**'
+      - 'common/**'
+      - '.github/workflows/dantube-test.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          submodules: recursive
+      - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+      - name: Build test APK
+        run: bash ./gradlew :smarttubetv:assembleDantubeDebug --no-daemon
+      - name: Verify APK and write checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdk_tools="$ANDROID_HOME/build-tools/30.0.3"
+          cd smarttubetv/build/outputs/apk/dantube/debug
+          apk=$(find . -maxdepth 1 -name 'DanTube-*-universal-debug.apk' -printf '%f
+')
+          test -f "$apk"
+          "$sdk_tools/apksigner" verify "$apk"
+          "$sdk_tools/aapt" dump badging "$apk" | grep "package: name='br.com.dannsolucoesdigitais.dantube'"
+          sha256sum "$apk" > "$apk.sha256"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: dantube-tv-test
+          path: |
+            smarttubetv/build/outputs/apk/dantube/debug/DanTube-*-universal-debug.apk
+            smarttubetv/build/outputs/apk/dantube/debug/DanTube-*-universal-debug.apk.sha256
+          if-no-files-found: error

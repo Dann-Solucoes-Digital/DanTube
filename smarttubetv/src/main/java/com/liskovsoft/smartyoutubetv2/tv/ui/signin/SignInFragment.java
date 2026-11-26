@@ -1,6 +1,8 @@
 package com.liskovsoft.smartyoutubetv2.tv.ui.signin;
 
 import android.graphics.drawable.Drawable;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
 import androidx.annotation.NonNull;
@@ -18,6 +20,11 @@ import com.liskovsoft.sharedutils.mylogger.Log;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.SignInPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.views.SignInView;
 import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.liskovsoft.smartyoutubetv2.tv.BuildConfig;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.smartyoutubetv2.tv.util.ViewUtil;
 
@@ -70,13 +77,17 @@ public class SignInFragment extends GuidedStepSupportFragment implements SignInV
 
         mFullSignInUrl = fullSignInUrl != null ? fullSignInUrl : signInUrl;
 
-        Glide.with(getContext())
-                .load(Utils.toQrCodeLink(mFullSignInUrl))
-                .placeholder(R.drawable.activate_account_qrcode)
-                .apply(ViewUtil.glideOptions())
-                .error(R.drawable.activate_account_qrcode)
-                .listener(mErrorListener)
-                .into(getGuidanceStylist().getIconView());
+        if ("dantube".equals(BuildConfig.FLAVOR)) {
+            showLocalQrCode(mFullSignInUrl);
+        } else {
+            Glide.with(getContext())
+                    .load(Utils.toQrCodeLink(mFullSignInUrl))
+                    .placeholder(R.drawable.activate_account_qrcode)
+                    .apply(ViewUtil.glideOptions())
+                    .error(R.drawable.activate_account_qrcode)
+                    .listener(mErrorListener)
+                    .into(getGuidanceStylist().getIconView());
+        }
 
         String description = getString(R.string.signin_view_description, signInUrl);
         int start = description.indexOf(signInUrl);
@@ -84,6 +95,28 @@ public class SignInFragment extends GuidedStepSupportFragment implements SignInV
         CharSequence coloredDescription = Utils.color(description, ContextCompat.getColor(getContext(), R.color.red), start, end);
 
         getGuidanceStylist().getDescriptionView().setText(coloredDescription);
+    }
+
+    private void showLocalQrCode(String url) {
+        if (TextUtils.isEmpty(url)) {
+            getGuidanceStylist().getIconView().setImageResource(R.drawable.activate_account_qrcode);
+            return;
+        }
+
+        try {
+            int size = 480;
+            BitMatrix matrix = new QRCodeWriter().encode(url, BarcodeFormat.QR_CODE, size, size);
+            int[] pixels = new int[size * size];
+            for (int row = 0; row < size; row++) {
+                for (int column = 0; column < size; column++) {
+                    pixels[row * size + column] = matrix.get(column, row) ? Color.BLACK : Color.WHITE;
+                }
+            }
+            Bitmap image = Bitmap.createBitmap(pixels, size, size, Bitmap.Config.ARGB_8888);
+            getGuidanceStylist().getIconView().setImageBitmap(image);
+        } catch (WriterException e) {
+            getGuidanceStylist().getIconView().setImageResource(R.drawable.activate_account_qrcode);
+        }
     }
 
     @Override

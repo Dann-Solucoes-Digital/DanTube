@@ -123,14 +123,16 @@ android {
     // https://stackoverflow.com/questions/18332474/how-to-set-versionname-in-apk-filename-using-gradle
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
-            def project = "SmartTube"
-            def flavor = variant.productFlavors[-1].name.substring(2) // remove st prefix
-            def buildType = variant.buildType.name.take(1)
+            def flavorName = variant.flavorName
+            def isDanTube = flavorName == "dantube"
+            def flavor = isDanTube ? flavorName : flavorName.substring(2) // remove st prefix
             def version = variant.versionName
             def arch = output.getFilter(com.android.build.OutputFile.ABI)
             arch = arch != null ? arch : "universal"
 
-            def newApkName = sprintf("%s_%s_%s_%s.apk", [project, flavor, version, arch])
+            def newApkName = isDanTube
+                    ? sprintf("DanTube-%s-%s-%s.apk", [version, arch, variant.buildType.name])
+                    : sprintf("SmartTube_%s_%s_%s.apk", [flavor, version, arch])
 
             // gradle 4.6 migration
             output.outputFileName = new File(newApkName)
@@ -159,6 +161,13 @@ android {
 
     // NOTE: The main goal of prefixing a flavor is to group flavors' folders together
     productFlavors {
+        dantube {
+            applicationId "br.com.dannsolucoesdigitais.dantube"
+            versionCode 1
+            versionName "0.1.0"
+            targetSdkVersion project.properties.compileSdkVersion
+            matchingFallbacks = ['ststable']
+        }
         stbeta {
             applicationId "org.smarttube.beta"
             targetSdkVersion project.properties.compileSdkVersion
@@ -183,6 +192,7 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
+    implementation 'com.google.zxing:core:3.5.3'
     implementation 'androidx.leanback:leanback:' + leanbackXVersion
     implementation 'androidx.leanback:leanback-preference:' + leanbackXVersion
     implementation 'androidx.recommendation:recommendation:' + leanbackXVersion
